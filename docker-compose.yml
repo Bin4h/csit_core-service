@@ -1,0 +1,38 @@
+services:
+  gateway:
+    build: ./api-gateway
+    container_name: gateway
+    ports:
+      - "8081:8081"
+    depends_on:
+      - core
+  core:
+    build: ./core-service
+    ports:
+      - "8082:8082"      
+    environment:
+    - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/lab
+    - SPRING_DATASOURCE_USERNAME=postgres
+    - SPRING_DATASOURCE_PASSWORD=postgres
+    - SPRING_JPA_HIBERNATE_DDL-AUTO=update
+    depends_on:
+      - postgres
+  postgres:
+    image: postgres:13
+    container_name: postgres
+    environment:
+      POSTGRES_DB: lab
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - 'postgres_data:/var/lib/postgresql/data'
+      - './core-service/src/main/resources/initdb.sql:/docker-entrypoint-initdb.d/initdb.sql'
+
+networks:
+  default:
+    name: my-network
+    driver: bridge
+volumes:
+  postgres_data:
